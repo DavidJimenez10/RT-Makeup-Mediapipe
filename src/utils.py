@@ -62,6 +62,42 @@ def draw_landmarks_on_image(rgb_image: np.array, detection_result: FaceLandmarke
   return annotated_image
 
 
+def apply_makeup(img: np.ndarray, detection_result: FaceLandmarkerResult):#, feature: str, show_landmarks: bool = False):
+    """
+    Takes in a source image and applies effects onto it.
+    """
+    output = np.copy(img)
+
+    if detection_result.face_landmarks:
+        face_landmarks_list = detection_result.face_landmarks
+        for idx in range(len(face_landmarks_list)):
+            face_landmarks = face_landmarks_list[idx]
+            face_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+            face_landmarks_proto.landmark.extend([
+            landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in face_landmarks
+            ])
+            #print('*'*50)
+            """
+            mask = mask_landmarks(image=img,
+                        landmark_list=face_landmarks_proto,
+                        connections=upper_lip,#mp.solutions.face_mesh.FACEMESH_LIPS,
+                        connection_drawing_spec=DrawingSpec(color=(0,255,0)))
+            """
+            idx_to_coordinates = landmarks_to_px(image=img,
+                        landmark_list=face_landmarks_proto)
+            
+            points_bottom_lip = filter_points(idx_to_coordinates, LANDMARKS_BOTTOM_LIP)
+            points_upper_lip = filter_points(idx_to_coordinates, LANDMARKS_UPPER_LIP)
+
+            points_cheeks = filter_points(idx_to_coordinates, LANDMARKS_CHEEKS)
+
+            mask = lipstick(img, points_bottom_lip, (93,33,44))
+            output = cv2.addWeighted(img, 1.0, mask, 0.4, 0.0)
+
+            mask = lipstick(img, points_upper_lip, (193,104,115))
+            output = cv2.addWeighted(output, 1.0, mask, 0.4, 0.0)
+
+    return output
 def landmarks_to_px(
     image: np.ndarray,
     landmark_list: landmark_pb2.NormalizedLandmarkList) -> Dict:
@@ -90,4 +126,10 @@ def filter_points(idx_to_coordinates: dict, connections: list[int]) -> np.ndarra
     points = [idx_to_coordinates[idx] for idx in connections]
         
     return np.array(points)
+
+def lipstick(src, points: np.ndarray, color) -> np.ndarray:
+    mask = np.zeros_like(src)
+    cv2.fillPoly(mask, [points], color)
+    cv2.GaussianBlur(mask, (7,7), 5)
+    return mask
 

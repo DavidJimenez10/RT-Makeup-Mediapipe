@@ -4,17 +4,12 @@ import queue
 import threading
 
 import mediapipe as mp
-from mediapipe import solutions
-from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
 from utils import draw_landmarks_on_image, apply_makeup
 
 MODEL_PATH = "model/face_landmarker.task"
-
-def main():
-
 
 BaseOptions = mp.tasks.BaseOptions
 FaceLandmarker = vision.FaceLandmarker
@@ -54,8 +49,8 @@ VisionRunningMode = vision.RunningMode
                 face_landmarks_result = queue.get()
 
                 #print(face_landmarks_result)
-                annotated_image = draw_landmarks_on_image(mp_image.numpy_view(),face_landmarks_result)
-
+                #annotated_image = draw_landmarks_on_image(mp_image.numpy_view(),face_landmarks_result)
+                annotated_image = apply_makeup(mp_image.numpy_view(),face_landmarks_result)
                 cv2.imshow('video', cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
                 
 

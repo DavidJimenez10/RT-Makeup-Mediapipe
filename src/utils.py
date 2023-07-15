@@ -20,6 +20,7 @@ LANDMARKS_CHEEKS = [425, 205]
 _PRESENCE_THRESHOLD = 0.5
 _VISIBILITY_THRESHOLD = 0.5
 _BGR_CHANNELS = 3
+
 def draw_landmarks_on_image(rgb_image: np.array, detection_result: FaceLandmarkerResult):
 
   annotated_image = np.copy(rgb_image)
@@ -97,7 +98,12 @@ def apply_makeup(img: np.ndarray, detection_result: FaceLandmarkerResult):#, fea
             mask = lipstick(img, points_upper_lip, (193,104,115))
             output = cv2.addWeighted(output, 1.0, mask, 0.4, 0.0)
 
+            mask = blush(img, points_cheeks, (233,201,193), 30)
+            output = cv2.addWeighted(output, 1.0, mask, 0.4, 0.0)
+
+
     return output
+
 def landmarks_to_px(
     image: np.ndarray,
     landmark_list: landmark_pb2.NormalizedLandmarkList) -> Dict:
@@ -132,4 +138,31 @@ def lipstick(src, points: np.ndarray, color) -> np.ndarray:
     cv2.fillPoly(mask, [points], color)
     cv2.GaussianBlur(mask, (7,7), 5)
     return mask
+
+def blush(src, points: np.ndarray, color, radius) -> np.ndarray:
+    mask = np.zeros_like(src)
+    for point in points:
+        cv2.circle(mask, point, radius, color, cv2.FILLED)
+        x, y = point[0] - radius, point[1] - radius  # Get the top-left of the mask
+        mask[y:y + 2 * radius, x:x + 2 * radius] = vignette(mask[y:y + 2 * radius, x:x + 2 * radius],
+                                                            10)  # Vignette on the mask
+
+
+    return mask
+
+
+
+def vignette(src: np.ndarray, sigma: int):
+    """
+    Given a src image and a sigma, returns a vignette of the src
+    """
+    height, width, _ = src.shape
+    kernel_x = cv2.getGaussianKernel(width, sigma)
+    kernel_y = cv2.getGaussianKernel(height, sigma)
+
+    kernel = kernel_y * kernel_x.T
+    mask = kernel / kernel.max()
+    blurred = cv2.convertScaleAbs(src.copy() * np.expand_dims(mask, axis=-1))
+    return blurred
+
 

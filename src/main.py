@@ -17,6 +17,9 @@ FaceLandmarkerOptions = vision.FaceLandmarkerOptions
 FaceLandmarkerResult = vision.FaceLandmarkerResult
 VisionRunningMode = vision.RunningMode
 
+def main():
+
+    
     def pass_result(result: FaceLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         if result:
             queue.put(result)

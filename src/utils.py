@@ -12,6 +12,11 @@ from typing import List, Dict
 
 from mediapipe.tasks.python.vision import FaceLandmarkerResult
 
+LANDMARKS_UPPER_LIP = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 308, 310, 311, 312, 13, 82, 81, 80, 191, 78,]
+LANDMARKS_BOTTOM_LIP =  [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95, 78]            
+
+LANDMARKS_CHEEKS = [425, 205]
+
 _PRESENCE_THRESHOLD = 0.5
 _VISIBILITY_THRESHOLD = 0.5
 _BGR_CHANNELS = 3
@@ -79,4 +84,10 @@ def landmarks_to_px(
             idx_to_coordinates[idx] = landmark_px
 
     return idx_to_coordinates
+
+def filter_points(idx_to_coordinates: dict, connections: list[int]) -> np.ndarray:
+
+    points = [idx_to_coordinates[idx] for idx in connections]
+        
+    return np.array(points)
 

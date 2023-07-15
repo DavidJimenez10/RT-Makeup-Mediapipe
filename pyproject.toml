@@ -1,16 +1,14 @@
 [tool.poetry]
-name = "real-time avatar"
+name = "realtime makeup"
 version = "0.1.0"
-description = "This project implement a real time avatar using mediapipe and"
+description = ""
 authors = ["djm10 <djm9826@hotmail.com>"]
-license = "mit"
 readme = "README.md"
-packages = [{include = "real_time avatar"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-mediapipe = "^0.10.1"
 opencv-python = "^4.8.0.74"
+mediapipe = "^0.10.2"
 
 
 [build-system]

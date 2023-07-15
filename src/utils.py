@@ -56,3 +56,27 @@ def draw_landmarks_on_image(rgb_image: np.array, detection_result: FaceLandmarke
         
   return annotated_image
 
+
+def landmarks_to_px(
+    image: np.ndarray,
+    landmark_list: landmark_pb2.NormalizedLandmarkList) -> Dict:
+
+    if not landmark_list:
+        return
+    if image.shape[2] != _BGR_CHANNELS:
+        raise ValueError('Input image must contain three channel bgr data.')
+    image_rows, image_cols, _ = image.shape
+    idx_to_coordinates = {}
+    for idx, landmark in enumerate(landmark_list.landmark):
+        if ((landmark.HasField('visibility') and
+            landmark.visibility < _VISIBILITY_THRESHOLD) or
+            (landmark.HasField('presence') and
+            landmark.presence < _PRESENCE_THRESHOLD)):
+            continue
+        landmark_px = _normalized_to_pixel_coordinates(landmark.x, landmark.y,
+                                                image_cols, image_rows)
+        if landmark_px:
+            idx_to_coordinates[idx] = landmark_px
+
+    return idx_to_coordinates
+
